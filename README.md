@@ -24,6 +24,8 @@ This repository contains the client application only. The Flask API, TensorFlow 
 - RAG question answering through `POST /api/rag/ask`.
 - Chat mode selection between RAG Knowledge Chat and Normal LLM Chat.
 - Enter-key submission for chat messages and in-page conversation history.
+- Responsive sidebar navigation that becomes a keyboard-accessible drawer on smaller screens.
+- Guided example questions and a bundled original RAG knowledge document for immediate testing.
 
 ## How the Platform Works
 
@@ -67,6 +69,11 @@ The frontend is a small React single-page application. `src/main.jsx` mounts the
 ```text
 RoadSense-AI-Frontend/
 ├── public/
+│   ├── examples/
+│   │   ├── rag/
+│   │   │   └── roadsense-example-knowledge.txt
+│   │   └── road/
+│   │       └── README.md
 │   └── vite.svg
 ├── src/
 │   ├── assets/
@@ -123,7 +130,78 @@ The active frontend calls these Flask API endpoints:
 
 The original Flask application also exposes `GET /api/health`, but the active frontend does not call it.
 
-At present, the copied frontend uses the source implementation's local backend URLs directly: image prediction uses `http://127.0.0.1:5000`, while chat and RAG requests use `http://localhost:5000`. No `.env` file or Vite environment-variable integration exists in the source frontend. For a different backend host or a deployed frontend, these request URLs must be configured in the frontend code or replaced with an environment-based configuration as a separate change.
+The frontend centralizes its backend base URL in `src/services/config.js`. It defaults to `http://localhost:5000` and can be changed with `VITE_API_BASE_URL`. Copy `.env.example` to `.env` for a local override; Vite exposes only variables prefixed with `VITE_`, and no secrets belong in this file.
+
+Knowledge upload accepts PDF, TXT, DOC, and DOCX files only. Road images belong on the Detect Damage page and are sent to `/api/predict`, not `/api/rag/upload`.
+
+## Feature Guide
+
+### Detect Damage
+
+1. Choose a JPG/JPEG, PNG, or WebP road image, or obtain the documented dataset sample from the source link shown in the uploader.
+2. Select **Run detection**. React sends the file in the `image` field to `POST /api/predict`.
+3. Flask preprocesses the image and passes it to the trained EfficientNetB0 classifier.
+4. Review the predicted category and confidence on the result page.
+
+The sample road image from the original archive is not redistributed because its licensing information is not included. Its exact source path and the public dataset link are documented in `public/examples/road/README.md`.
+
+### Normal LLM Chat
+
+Select **Normal Chat** and choose an example question or write your own:
+
+```text
+User question -> Flask -> Ollama / Llama 3.1 -> response
+```
+
+No document upload is required. Ollama must be installed, running locally, and have `llama3.1` available.
+
+### RAG Knowledge Chat
+
+Select **RAG Knowledge**, choose **Use example document**, and then click **Upload & index**. The bundled document is original content written for this repository:
+
+```text
+public/examples/rag/roadsense-example-knowledge.txt
+```
+
+After indexing, click an example question such as:
+
+- What commonly causes potholes?
+- Why should damaged road signs be repaired?
+- What maintenance actions are described?
+
+The implementation follows:
+
+```text
+Document -> extraction -> chunks -> Sentence Transformer embeddings
+-> FAISS retrieval -> Ollama / Llama 3.1 -> answer
+```
+
+RAG accepts PDF, TXT, DOC, and DOCX only. JPG, JPEG, PNG, and WebP files belong to Detect Damage and are blocked from knowledge upload in the browser and backend.
+
+## Example Files
+
+The original archive was searched recursively before adding examples. It contains the road image dataset and the original project’s RAG upload documents are stored in the separate backend source, not in the downloaded archive. Dataset split CSVs are ML metadata and are not used as RAG examples.
+
+The frontend includes one newly written, copyright-safe TXT knowledge document at `public/examples/rag/roadsense-example-knowledge.txt`. It can be selected without browsing the filesystem and requires an explicit upload action.
+
+The preferred road demonstration is the archive pothole image:
+
+```text
+RoadSense-AI-archive/data/Road Issues/Pothole Issues/1_jpg.rf.165df17c20f06ab9f6e719388333fc5c.jpg
+```
+
+That file exists in the read-only archive and is part of the dataset identified by the original project as the Kaggle Road Issues Detection Dataset. It was not copied into this repository because the archive does not include clear redistribution licensing information. The Detect Damage page links to the source dataset instead.
+
+## Responsive Design
+
+The interface uses fluid widths, CSS Grid, Flexbox, `clamp()` typography, and responsive breakpoints rather than fixed screen-specific layouts.
+
+- Desktop and laptop: persistent dark sidebar with a wide content canvas.
+- Tablet: sidebar becomes an off-canvas navigation drawer with a backdrop and menu button.
+- Mobile: single-column feature cards, stacked tool panels, full-width actions, wrapping filenames, and stacked chat composer controls.
+- Narrow mobile: reduced page gutters and vertically stacked mode controls to avoid horizontal overflow.
+
+All primary controls use practical tap targets, and navigation includes `aria-expanded`, `aria-controls`, and an accessible close action.
 
 ## Technology Stack
 
@@ -162,6 +240,14 @@ npm install
 npm run dev
 ```
 
+For a local backend override, copy `.env.example` to `.env` before starting Vite:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell, use `Copy-Item .env.example .env`. The default is `VITE_API_BASE_URL=http://localhost:5000`.
+
 Vite normally serves the frontend at `http://localhost:5173`. The browser UI can render without the backend, but image detection, normal chat, document upload, and RAG questions require the Flask API to be running on port `5000`.
 
 Useful project commands:
@@ -171,6 +257,15 @@ npm run build   # Create a production build in dist/
 npm run lint    # Run ESLint
 npm run preview # Preview the production build locally
 ```
+
+## Manual Test Walkthrough
+
+1. Start the Flask backend and confirm `GET http://localhost:5000/api/health` returns `{"status":"ok"}`.
+2. Open `/detect`, choose a permitted road image from the documented source, and run detection. Confirm the result page shows a class and confidence.
+3. Open `/chat`, select **Normal Chat**, and use an example question. Confirm Ollama is running if a generated answer is expected.
+4. Select **RAG Knowledge**, choose **Use example document**, upload and index it, then ask one of the bundled example questions.
+5. Confirm a JPG selected in the RAG picker is not accepted and is never sent to `/api/rag/upload`.
+6. Resize the browser through desktop, tablet, and mobile widths. Confirm the drawer navigation, upload controls, cards, filenames, buttons, and chat bubbles remain readable without horizontal scrolling.
 
 ## Running the Complete Platform
 

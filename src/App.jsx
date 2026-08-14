@@ -54,6 +54,7 @@
 // export default App;
 
 
+import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -64,16 +65,41 @@ import "./App.css";
 
 
 function App() {
+  const [navigationOpen, setNavigationOpen] = useState(false);
+
   return (
-    <>
-      <Navbar />
+    <div className="app-shell">
+      <Navbar
+        navigationOpen={navigationOpen}
+        onNavigate={() => setNavigationOpen(false)}
+        onToggle={() => setNavigationOpen((isOpen) => !isOpen)}
+      />
+      <button
+        className="mobile-menu-trigger"
+        type="button"
+        aria-expanded={navigationOpen}
+        aria-controls="primary-navigation"
+        aria-label={navigationOpen ? "Close navigation" : "Open navigation"}
+        onClick={() => setNavigationOpen((isOpen) => !isOpen)}
+      >
+        {navigationOpen ? "Close" : "Menu"}
+      </button>
+      {navigationOpen && (
+        <button
+          className="navigation-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setNavigationOpen(false)}
+        />
+      )}
+      <main className="main-content">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/detect" element={<Detect />} />
         <Route path="/result" element={<PredictResult />} />
         <Route path="/chat" element={<Chat />} />
       </Routes>
-    </>
+      </main>
+    </div>
   );
 }
 
