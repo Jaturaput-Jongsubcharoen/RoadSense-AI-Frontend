@@ -27,14 +27,14 @@ export default function Home() {
           <span className="feature-number">01</span>
           <ProcessFlow type="classification" />
           <h2>Road issue<br />classification</h2>
-          <p>Turn a road photo into a useful first assessment. RoadSense AI looks for visible issues such as potholes, damaged surfaces, broken signs, illegal parking, littering, mixed issues, and vandalism, helping you understand what may need attention before a closer inspection.</p>
+          <p>Its purpose is to turn a road photo into a useful first assessment. RoadSense AI looks for visible issues such as potholes, damaged surfaces, broken signs, illegal parking, littering, mixed issues, and vandalism, helping you understand what may need attention before a closer inspection.</p>
           <Link to="/detect" className="button hero-cta hero-cta-primary">Analyze a road image <span aria-hidden="true">↗</span></Link>
         </article>
         <article className="feature-card feature-card-cream">
           <span className="feature-number">02</span>
           <ProcessFlow type="assistant" />
           <h2>Two ways to<br />ask better questions</h2>
-          <p>Ask the local assistant for practical road-safety guidance, or give it a report to study. Normal Chat supports open questions, while Agentic RAG Knowledge finds relevant passages in your PDF, TXT, DOC, or DOCX and uses them to keep answers connected to the document.</p>
+          <p>Its purpose is to help you ask practical road-safety questions and understand reference material. Normal Chat supports open questions, while Agentic RAG Knowledge finds relevant passages in your PDF, TXT, DOC, or DOCX and uses them to keep answers connected to the document.</p>
           <Link to="/chat" className="button hero-cta hero-cta-secondary">Open AI assistant <span aria-hidden="true">↗</span></Link>
         </article>
       </section>
