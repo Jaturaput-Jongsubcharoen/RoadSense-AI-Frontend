@@ -297,6 +297,27 @@ npm run lint    # Run ESLint
 npm run preview # Preview the production build locally
 ```
 
+## Render Deployment
+
+Deploy this repository as a Render Static Site using the included `render.yaml`:
+
+```text
+Build command: npm run build
+Publish directory: dist
+```
+
+Set this Render build environment variable before the static site is built:
+
+```text
+VITE_API_BASE_URL=https://<your-backend-service>.onrender.com
+```
+
+Vite embeds `VITE_*` values at build time. Do not put backend secrets, LLM keys, or model URLs in frontend environment variables. The local `http://localhost:5000` fallback is intended only for development.
+
+The `render.yaml` includes an SPA rewrite from `/*` to `/index.html`, allowing direct navigation or refresh on the React routes such as `/detect` and `/chat`.
+
+After deployment, test the deployed backend health endpoint, one image prediction, Normal Chat, and Agentic RAG independently. A deployed backend can be online while its external LLM is unavailable; image classification and static examples should still show their own errors or results without making the whole frontend unusable.
+
 ## Manual Test Walkthrough
 
 1. Start the Flask backend and confirm `GET http://localhost:5000/api/health` returns `{"status":"ok"}`.
