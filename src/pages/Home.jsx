@@ -11,6 +11,7 @@
 
 
 import { Link } from "react-router-dom";
+import ProcessFlow from "../components/ProcessFlow";
 
 export default function Home() {
   return (
@@ -18,20 +19,22 @@ export default function Home() {
       <section className="hero-section">
         <div className="eyebrow">ROAD INTELLIGENCE / LOCAL AI</div>
         <h1>See the road<br /><em>more clearly.</em></h1>
-        <p className="hero-copy">RoadSense AI pairs computer vision with a local AI assistant to turn road images and reference documents into useful, explainable starting points.</p>
+        <p className="hero-copy">RoadSense AI helps explore road conditions in three ways: classify road images into seven issue categories, ask Normal Chat questions through a local Llama 3.1 assistant, and use Agentic RAG Knowledge to upload reports and receive answers grounded in their contents.</p>
       </section>
 
       <section className="feature-grid" aria-label="RoadSense AI capabilities">
         <article className="feature-card feature-card-dark">
           <span className="feature-number">01</span>
+          <ProcessFlow type="classification" />
           <h2>Road issue<br />classification</h2>
-          <p>Upload a JPG, PNG, or WebP road image. The Flask API sends it through the trained EfficientNetB0 model and returns one of seven issue categories.</p>
+          <p>Turn a road photo into a useful first assessment. RoadSense AI looks for visible issues such as potholes, damaged surfaces, broken signs, illegal parking, littering, mixed issues, and vandalism, helping you understand what may need attention before a closer inspection.</p>
           <Link to="/detect" className="button hero-cta hero-cta-primary">Analyze a road image <span aria-hidden="true">↗</span></Link>
         </article>
         <article className="feature-card feature-card-cream">
           <span className="feature-number">02</span>
+          <ProcessFlow type="assistant" />
           <h2>Two ways to<br />ask better questions</h2>
-          <p>Use Normal Chat for a local Llama 3.1 conversation, or upload a PDF, TXT, DOC, or DOCX for grounded RAG answers.</p>
+          <p>Ask the local assistant for practical road-safety guidance, or give it a report to study. Normal Chat supports open questions, while Agentic RAG Knowledge finds relevant passages in your PDF, TXT, DOC, or DOCX and uses them to keep answers connected to the document.</p>
           <Link to="/chat" className="button hero-cta hero-cta-secondary">Open AI assistant <span aria-hidden="true">↗</span></Link>
         </article>
       </section>

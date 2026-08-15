@@ -221,7 +221,7 @@ export default function ChatbotWidget({ selectedExample }) {
     <div className="chat-widget">
       <div className="chat-mode-tabs" role="group" aria-label="Assistant mode">
         <button className={!useRag ? "mode-tab is-active" : "mode-tab"} onClick={() => setUseRag(false)} type="button">Normal Chat</button>
-        <button className={useRag ? "mode-tab is-active" : "mode-tab"} onClick={() => setUseRag(true)} type="button">RAG Knowledge</button>
+        <button className={useRag ? "mode-tab is-active" : "mode-tab"} onClick={() => setUseRag(true)} type="button">Agentic RAG Knowledge</button>
       </div>
 
       {useRag && <div className="knowledge-panel">
