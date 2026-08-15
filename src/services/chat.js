@@ -99,3 +99,13 @@ export async function askRagQuestion(question) {
     return { error: error.message };
   }
 }
+
+export async function generateSuggestedQuestions() {
+  try {
+    const response = await fetch(`${API_URL}/api/rag/questions`, { method: "POST" });
+    return await readJsonResponse(response);
+  } catch (error) {
+    console.error("Suggested question generation failed:", error);
+    return { questions: [], error: error.message };
+  }
+}

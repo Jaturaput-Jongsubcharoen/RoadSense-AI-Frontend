@@ -11,9 +11,21 @@
 // }
 
 import ChatbotWidget from "../components/ChatbotWidget";
+import DocumentExampleGallery from "../components/DocumentExampleGallery";
+import { useState } from "react";
+import { generateSuggestedQuestions, uploadKnowledgeFile } from "../services/chat";
 
 
 export default function Chat() {
+  const [selectedExample, setSelectedExample] = useState(null);
+
+  const handleExampleDocument = async (document, file) => {
+    setSelectedExample({ document, file, indexing: true });
+    const uploadResult = await uploadKnowledgeFile(file);
+    const generated = uploadResult.status === "ok" ? await generateSuggestedQuestions() : { questions: [] };
+    setSelectedExample({ document, file, indexing: false, uploadResult, suggestedQuestions: generated.questions?.length >= 5 ? generated.questions.slice(0, 5) : document.suggested_questions || [] });
+  };
+
   return (
     <div className="page page-tool">
       <section className="page-intro">
@@ -21,6 +33,7 @@ export default function Chat() {
         <h1>Ask the road<br /><em>better questions.</em></h1>
         <p>Choose a direct local conversation or ground your question in a document you provide. The two modes are separate by design.</p>
       </section>
+      <DocumentExampleGallery onUseDocument={handleExampleDocument} />
       <div className="chat-layout">
         <aside className="mode-guide">
           <div className="mode-guide-block">
@@ -36,7 +49,7 @@ export default function Chat() {
             <small>Upload PDF, TXT, DOC, or DOCX, then ask about its contents.</small>
           </div>
         </aside>
-        <div className="tool-card chat-card"><ChatbotWidget /></div>
+        <div className="tool-card chat-card"><ChatbotWidget key={`${selectedExample?.file?.name || "empty"}-${selectedExample?.indexing ? "indexing" : "ready"}`} selectedExample={selectedExample} /></div>
       </div>
     </div>
   );

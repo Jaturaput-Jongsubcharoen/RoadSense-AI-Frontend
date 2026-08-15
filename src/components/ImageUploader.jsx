@@ -118,40 +118,19 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { API_URL } from "../services/config";
 
-export default function ImageUploader({ exampleFile }) {
-  const [image, setImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+export default function ImageUploader({ exampleFile, onPrediction }) {
+  const [image, setImage] = useState(exampleFile?.file || null);
+  const [previewUrl, setPreviewUrl] = useState(exampleFile?.url || "");
   const [previewIsObjectUrl, setPreviewIsObjectUrl] = useState(false);
-  const [expectedClass, setExpectedClass] = useState("");
+  const [expectedClass, setExpectedClass] = useState(exampleFile?.expectedClass || "");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!exampleFile) return undefined;
-    let active = true;
-    fetch(exampleFile.url)
-      .then((response) => {
-        if (!response.ok) throw new Error("Example image could not be loaded.");
-        return response.blob();
-      })
-      .then((blob) => {
-        if (!active) return;
-        setImage(new File([blob], exampleFile.filename, { type: blob.type || "image/jpeg" }));
-        setPreviewUrl(exampleFile.url);
-        setPreviewIsObjectUrl(false);
-        setExpectedClass(exampleFile.label);
-        setError("");
-      })
-      .catch((requestError) => {
-        console.error("Example image selection failed:", requestError);
-        if (active) setError("This example image could not be loaded.");
-      });
-    return () => { active = false; };
-  }, [exampleFile]);
+  useEffect(() => () => {
+    if (previewIsObjectUrl && previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewIsObjectUrl, previewUrl]);
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
@@ -202,13 +181,11 @@ export default function ImageUploader({ exampleFile }) {
 
       console.log("Prediction Response:", res.data);
 
-      navigate("/result", {
-        state: {
-          ...res.data,
-          imagePreview: previewUrl,
-          previewIsObjectUrl,
-          expectedClass,
-        },
+      onPrediction?.({
+        ...res.data,
+        imagePreview: previewUrl,
+        previewIsObjectUrl,
+        expectedClass,
       });
     } catch (err) {
       console.error("Error sending image:", err);
@@ -249,6 +226,7 @@ export default function ImageUploader({ exampleFile }) {
 
       {previewUrl && <div className="image-preview-wrap"><img className="image-preview" src={previewUrl} alt={expectedClass ? `${expectedClass} selected example` : "Selected road image preview"} /><div className="preview-actions"><button type="button" className="text-button" onClick={replaceImage}>Change image</button><button type="button" className="text-button" onClick={clearSelection}>Remove</button></div></div>}
       {image && <p className="selected-file"><span aria-hidden="true">✓</span> {image.name}</p>}
+      {expectedClass && <p className="status-message status-success">Example selected and ready for the real detector. Expected result: {expectedClass}.</p>}
 
       <button className="button button-primary action-button" onClick={sendImage} disabled={isSubmitting}>
         {isSubmitting ? "Analyzing image…" : "Run detection →"}
@@ -259,7 +237,7 @@ export default function ImageUploader({ exampleFile }) {
       <div className="sample-source">
         <span>Want to try the documented pothole sample?</span>
         <a href="https://www.kaggle.com/datasets/programmerrdai/road-issues-detection-dataset" target="_blank" rel="noreferrer">Get a permitted copy from the dataset source ↗</a>
-        <small>The original archive image is documented in `public/examples/road/README.md` but is not redistributed because its license is unclear.</small>
+        <small>The original archive image is not redistributed because its license is unclear. The backend owns the curated examples and links to the permitted dataset source.</small>
       </div>
     </div>
   );
