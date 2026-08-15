@@ -1,5 +1,14 @@
 # RoadSense AI Frontend
 
+### Main Page
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ff6b6263-3ec8-4491-991f-9b64fb9b1678" />
+
+### Image Detection Feature
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/bf9122dd-12cf-4e1f-b59f-20cca6f3b506" />
+
+### Normal AI Chatbot & Agentic RAG Feature
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/3b130cf9-3980-4fcd-8a8b-100ba7f3a154" />
+
 RoadSense AI is an intelligent road issue detection and RAG AI assistant platform. This repository contains the separated React/Vite frontend for the platform. It provides the browser interface for uploading road images, viewing model predictions, chatting with a local AI assistant, and uploading documents for retrieval-augmented question answering.
 
 The frontend is a portfolio-oriented separation of the frontend component from a COMP258 educational team project originally developed at Centennial College. The original project was developed by a team; this repository does not present that team work as individual work. It is separated here to make the frontend easier to review and maintain.
