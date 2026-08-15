@@ -69,17 +69,9 @@ The frontend is a small React single-page application. `src/main.jsx` mounts the
 ```text
 RoadSense-AI-Frontend/
 ├── public/
-│   ├── examples/
-│   │   ├── rag/
-│   │   │   └── roadsense-example-knowledge.txt
-│   │   └── road/
-│   │       └── README.md
 │   └── vite.svg
 ├── src/
 │   ├── assets/
-│   │   ├── examples/road/
-│   │   │   ├── example-manifest.json
-│   │   │   └── seven class folders with three images each
 │   │   └── react.svg
 │   ├── components/
 │   │   ├── ChatbotWidget.jsx
@@ -132,6 +124,10 @@ The active frontend calls these Flask API endpoints:
 | `POST` | `/api/chat` | Sends `{ "message": "..." }` for normal local AI chat |
 | `POST` | `/api/rag/upload` | Sends a document in a multipart `file` field for indexing |
 | `POST` | `/api/rag/ask` | Sends `{ "question": "..." }` and receives an RAG answer |
+| `GET` | `/api/examples/images` | Discovers backend-owned road examples and expected classes |
+| `GET` | `/api/examples/images/<relative-name>` | Serves one safe example image |
+| `GET` | `/api/examples/documents` | Discovers bundled RAG documents and suggested questions |
+| `GET` | `/api/examples/documents/<filename>` | Serves one safe document for preview or real RAG upload |
 
 The original Flask application also exposes `GET /api/health`, but the active frontend does not call it.
 
@@ -148,7 +144,7 @@ Knowledge upload accepts PDF, TXT, DOC, and DOCX files only. Road images belong 
 3. Flask preprocesses the image and passes it to the trained EfficientNetB0 classifier.
 4. Review the predicted category and confidence on the result page.
 
-The sample road image from the original archive is not redistributed because its licensing information is not included. Its exact source path and the public dataset link are documented in `public/examples/road/README.md`.
+The sample road image from the original archive is not redistributed because its licensing information is not included. Its exact source path and the public dataset link are documented in the backend example provenance and manifest history.
 
 The model classes and index order are:
 
@@ -176,9 +172,11 @@ No document upload is required. Ollama must be installed, running locally, and h
 
 ### RAG Knowledge Chat
 
-Select **RAG Knowledge**, choose a document card's **Use for RAG** action, and then click **Upload & index**. Example documents are discovered from the backend's `GET /api/examples/documents` endpoint rather than hardcoded in the React page.
+Select **RAG Knowledge**, choose a document card's **Use for RAG** action, and the document is automatically downloaded and indexed. Manual selection through **Upload document** also starts indexing immediately. Example documents are discovered from the backend's `GET /api/examples/documents` endpoint rather than hardcoded in the React page.
 
 Each document card shows its file type, size, description, first-page PDF cover, and document-specific suggested questions. **Preview** opens a responsive modal containing the full browser PDF viewer. **Use for RAG** downloads the selected example into the same `FormData` upload path used by manual files. After indexing, the question chips are taken from the selected document's metadata.
+
+While a manual or example document is indexing, the question chips, question input, Enter submission, and Send button are disabled. Once indexing completes, the backend asks Ollama/Llama 3.1 for exactly five document-grounded example questions. If Ollama is unavailable, the UI uses five bundled or generic fallback questions. The questions remain in one horizontally scrollable row on narrow screens.
 
 The implementation follows:
 
@@ -193,7 +191,7 @@ RAG accepts PDF, TXT, DOC, and DOCX only. JPG, JPEG, PNG, and WebP files belong 
 
 The original archive was searched recursively before adding examples. It contains the road image dataset and the original project’s RAG upload documents are stored in the separate backend source, not in the downloaded archive. Dataset split CSVs are ML metadata and are not used as RAG examples.
 
-The frontend includes the 21 curated image files under `src/assets/examples/road/`, discovered at build time with `import.meta.glob()`. Add another valid image to an existing class folder and it will appear in the same gallery without new JSX. Provenance and approximate source sizes are recorded in `src/assets/examples/road/example-manifest.json`.
+The backend owns the 21 curated image files under `RoadSense-AI-Backend/examples/images/`. The frontend calls `GET /api/examples/images` and builds the gallery from safe metadata, so adding another valid image to an existing backend category folder makes it appear after refresh without new JSX or a second frontend source of truth.
 
 The preferred road demonstration is the archive pothole image:
 
@@ -203,7 +201,7 @@ RoadSense-AI-archive/data/Road Issues/Pothole Issues/1_jpg.rf.165df17c20f06ab9f6
 
 That file exists in the read-only archive and is part of the dataset identified by the original project as the Kaggle Road Issues Detection Dataset. It was not copied into this repository because the archive does not include clear redistribution licensing information. The Detect Damage page links to the source dataset instead.
 
-The archive contains no PDF, TXT, DOC, or DOCX examples. The backend examples are two PDFs copied from original team-project backend uploads into `RoadSense-AI-Backend/examples/documents/`: a Transport Canada road-safety upload and a British Columbia roads/roadless-areas report. Their provenance and document-specific questions are maintained in the backend `metadata.json` file. The exact Ontario report filenames considered during planning were not present in this workspace.
+The archive contains no PDF, TXT, DOC, or DOCX examples. The backend examples are two PDFs copied from original team-project backend uploads into `RoadSense-AI-Backend/examples/documents/`: a Transport Canada road-safety upload and a British Columbia roads/roadless-areas report. Their provenance and document-specific questions are maintained in the backend `metadata.json` file. The exact Ontario report filenames considered during planning were not present in this workspace. The frontend calls `GET /api/examples/documents` rather than hardcoding document cards.
 
 ## Responsive Design
 
@@ -278,7 +276,7 @@ npm run preview # Preview the production build locally
 1. Start the Flask backend and confirm `GET http://localhost:5000/api/health` returns `{"status":"ok"}`.
 2. Open `/detect`, choose a permitted road image from the documented source, and run detection. Confirm the result page shows a class and confidence.
 3. Open `/chat`, select **Normal Chat**, and use an example question. Confirm Ollama is running if a generated answer is expected.
-4. Select **RAG Knowledge**, choose **Use example document**, upload and index it, then ask one of the bundled example questions.
+4. Select **RAG Knowledge**, choose a document card's **Use for RAG** action, upload and index it, then ask one of that document's suggested questions.
 5. Confirm a JPG selected in the RAG picker is not accepted and is never sent to `/api/rag/upload`.
 6. Resize the browser through desktop, tablet, and mobile widths. Confirm the drawer navigation, upload controls, cards, filenames, buttons, and chat bubbles remain readable without horizontal scrolling.
 
