@@ -1,6 +1,6 @@
 # RoadSense AI Frontend
 
-### Main Page
+### Landing Page
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ff6b6263-3ec8-4491-991f-9b64fb9b1678" />
 
 ### Image Detection Feature
