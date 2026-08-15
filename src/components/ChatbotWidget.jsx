@@ -119,6 +119,7 @@ import {
   askRagQuestion,
   isSupportedKnowledgeFile,
 } from "../services/chat";
+import DocumentExampleGallery from "./DocumentExampleGallery";
 
 export default function ChatbotWidget() {
   const [msg, setMsg] = useState("");
@@ -129,22 +130,19 @@ export default function ChatbotWidget() {
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [knowledgeReady, setKnowledgeReady] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
-  const exampleQuestions = useRag
-    ? ["What commonly causes potholes?", "Why should damaged road signs be repaired?", "What maintenance actions are described?"]
+  const exampleQuestions = useRag && selectedDocument?.suggested_questions?.length
+    ? selectedDocument.suggested_questions
+    : useRag
+      ? ["What commonly causes potholes?", "Why should damaged road signs be repaired?", "What maintenance actions are described?"]
     : ["What are common causes of road damage?", "How can potholes be repaired?", "What should a road inspection prioritize?"];
 
-  const selectExampleDocument = async () => {
-    try {
-      const response = await fetch("/examples/rag/roadsense-example-knowledge.txt");
-      if (!response.ok) throw new Error("Example document could not be loaded.");
-      const blob = await response.blob();
-      setFile(new File([blob], "roadsense-example-knowledge.txt", { type: "text/plain" }));
-      setUploadMsg("Example document selected. Upload it when you are ready.");
-    } catch (error) {
-      console.error("Example document selection failed:", error);
-      setUploadMsg("Could not load the example document. Check the frontend server.");
-    }
+  const handleExampleDocument = (document, selectedFile) => {
+    setFile(selectedFile);
+    setSelectedDocument(document);
+    setKnowledgeReady(false);
+    setUploadMsg("Example document selected. Upload it when you are ready.");
   };
 
   const send = async (question = msg) => {
@@ -216,15 +214,15 @@ export default function ChatbotWidget() {
           <h2>Give the assistant something to read.</h2>
           <p>Upload a PDF, TXT, DOC, or DOCX. The backend extracts text, builds embeddings, retrieves relevant chunks, then asks Llama 3.1 for an answer.</p>
         </div>
+        <DocumentExampleGallery onUseDocument={handleExampleDocument} />
         <input
           id="knowledge-file"
           type="file"
           accept=".pdf,.txt,.doc,.docx"
-          onChange={(e) => { setFile(e.target.files[0]); setKnowledgeReady(false); setUploadMsg(""); }}
+          onChange={(e) => { setFile(e.target.files[0]); setSelectedDocument(null); setKnowledgeReady(false); setUploadMsg(""); }}
         />
         <div className="file-actions">
           <label className="file-picker compact" htmlFor="knowledge-file">Choose document</label>
-          <button onClick={selectExampleDocument} className="button button-secondary compact-button" type="button">Use example document</button>
           <button onClick={uploadFile} className="button button-primary compact-button" disabled={isUploading} type="button">{isUploading ? "Indexing…" : "Upload & index"}</button>
         </div>
         {file && <p className="selected-file"><span aria-hidden="true">✓</span> {file.name}</p>}

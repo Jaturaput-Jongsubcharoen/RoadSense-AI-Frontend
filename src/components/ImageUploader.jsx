@@ -116,34 +116,71 @@
 // }
 
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../services/config";
 
-export default function ImageUploader() {
+export default function ImageUploader({ exampleFile }) {
   const [image, setImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewIsObjectUrl, setPreviewIsObjectUrl] = useState(false);
+  const [expectedClass, setExpectedClass] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!exampleFile) return undefined;
+    let active = true;
+    fetch(exampleFile.url)
+      .then((response) => {
+        if (!response.ok) throw new Error("Example image could not be loaded.");
+        return response.blob();
+      })
+      .then((blob) => {
+        if (!active) return;
+        setImage(new File([blob], exampleFile.filename, { type: blob.type || "image/jpeg" }));
+        setPreviewUrl(exampleFile.url);
+        setPreviewIsObjectUrl(false);
+        setExpectedClass(exampleFile.label);
+        setError("");
+      })
+      .catch((requestError) => {
+        console.error("Example image selection failed:", requestError);
+        if (active) setError("This example image could not be loaded.");
+      });
+    return () => { active = false; };
+  }, [exampleFile]);
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     setError("");
 
+    if (previewIsObjectUrl && previewUrl) URL.revokeObjectURL(previewUrl);
+
     if (!file) {
       setImage(null);
+      setPreviewUrl("");
+      setExpectedClass("");
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setImage(null);
+      setPreviewUrl("");
+      setExpectedClass("");
       setError("Choose a JPG, PNG, or WebP image.");
       return;
     }
 
     setImage(file);
+    setExpectedClass("");
+    setPreviewIsObjectUrl(true);
+    setPreviewUrl(URL.createObjectURL(file));
   };
+
+  const replaceImage = () => document.getElementById("road-image")?.click();
 
   const sendImage = async () => {
     if (!image) {
@@ -165,7 +202,14 @@ export default function ImageUploader() {
 
       console.log("Prediction Response:", res.data);
 
-      navigate("/result", { state: res.data });
+      navigate("/result", {
+        state: {
+          ...res.data,
+          imagePreview: previewUrl,
+          previewIsObjectUrl,
+          expectedClass,
+        },
+      });
     } catch (err) {
       console.error("Error sending image:", err);
 
@@ -177,6 +221,15 @@ export default function ImageUploader() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const clearSelection = () => {
+    if (previewIsObjectUrl && previewUrl) URL.revokeObjectURL(previewUrl);
+    setImage(null);
+    setPreviewUrl("");
+    setPreviewIsObjectUrl(false);
+    setExpectedClass("");
+    setError("");
   };
 
   return (
@@ -194,6 +247,7 @@ export default function ImageUploader() {
       <label className="file-picker" htmlFor="road-image">Browse image files</label>
       <p className="input-hint">Supported: JPG / JPEG, PNG, WebP</p>
 
+      {previewUrl && <div className="image-preview-wrap"><img className="image-preview" src={previewUrl} alt={expectedClass ? `${expectedClass} selected example` : "Selected road image preview"} /><div className="preview-actions"><button type="button" className="text-button" onClick={replaceImage}>Change image</button><button type="button" className="text-button" onClick={clearSelection}>Remove</button></div></div>}
       {image && <p className="selected-file"><span aria-hidden="true">✓</span> {image.name}</p>}
 
       <button className="button button-primary action-button" onClick={sendImage} disabled={isSubmitting}>

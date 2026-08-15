@@ -11,8 +11,12 @@
 // }
 
 import ImageUploader from "../components/ImageUploader";
+import { useState } from "react";
+import RoadExampleGallery from "../components/RoadExampleGallery";
 
 export default function Detect() {
+  const [exampleFile, setExampleFile] = useState(null);
+
   return (
     <div className="page page-tool">
       <section className="page-intro">
@@ -30,8 +34,9 @@ export default function Detect() {
           </ol>
           <p className="technical-note">Technical note: Flask resizes the image to 224 × 224 before TensorFlow inference.</p>
         </aside>
-        <div className="tool-card"><ImageUploader /></div>
+        <div className="tool-card"><ImageUploader exampleFile={exampleFile} /></div>
       </div>
+      <RoadExampleGallery onUseExample={setExampleFile} />
     </div>
   );
 }

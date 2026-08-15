@@ -77,12 +77,17 @@ RoadSense-AI-Frontend/
 │   └── vite.svg
 ├── src/
 │   ├── assets/
+│   │   ├── examples/road/
+│   │   │   ├── example-manifest.json
+│   │   │   └── seven class folders with three images each
 │   │   └── react.svg
 │   ├── components/
 │   │   ├── ChatbotWidget.jsx
+│   │   ├── DocumentExampleGallery.jsx
 │   │   ├── ImageUploader.jsx
 │   │   ├── Navbar.jsx
-│   │   └── PredictionResult.jsx
+│   │   ├── PredictionResult.jsx
+│   │   └── RoadExampleGallery.jsx
 │   ├── pages/
 │   │   ├── Chat.jsx
 │   │   ├── Detect.jsx
@@ -145,6 +150,20 @@ Knowledge upload accepts PDF, TXT, DOC, and DOCX files only. Road images belong 
 
 The sample road image from the original archive is not redistributed because its licensing information is not included. Its exact source path and the public dataset link are documented in `public/examples/road/README.md`.
 
+The model classes and index order are:
+
+```text
+0 Broken Road Sign Issues
+1 Damaged Road issues
+2 Illegal Parking Issues
+3 Littering Garbage on Public Places Issues
+4 Mixed Issues
+5 Pothole Issues
+6 Vandalism Issues
+```
+
+The Detect Damage gallery contains three curated images per class, for 21 total. Each card shows the actual thumbnail, expected class, and a **Use example** action. Selecting an example populates the same file state as a manual upload and sends the real file through `/api/predict`; it never inserts a hardcoded result. The result page keeps the analyzed image visible and compares the expected class with the actual model prediction and confidence.
+
 ### Normal LLM Chat
 
 Select **Normal Chat** and choose an example question or write your own:
@@ -157,17 +176,9 @@ No document upload is required. Ollama must be installed, running locally, and h
 
 ### RAG Knowledge Chat
 
-Select **RAG Knowledge**, choose **Use example document**, and then click **Upload & index**. The bundled document is original content written for this repository:
+Select **RAG Knowledge**, choose a document card's **Use for RAG** action, and then click **Upload & index**. Example documents are discovered from the backend's `GET /api/examples/documents` endpoint rather than hardcoded in the React page.
 
-```text
-public/examples/rag/roadsense-example-knowledge.txt
-```
-
-After indexing, click an example question such as:
-
-- What commonly causes potholes?
-- Why should damaged road signs be repaired?
-- What maintenance actions are described?
+Each document card shows its file type, size, description, first-page PDF cover, and document-specific suggested questions. **Preview** opens a responsive modal containing the full browser PDF viewer. **Use for RAG** downloads the selected example into the same `FormData` upload path used by manual files. After indexing, the question chips are taken from the selected document's metadata.
 
 The implementation follows:
 
@@ -182,7 +193,7 @@ RAG accepts PDF, TXT, DOC, and DOCX only. JPG, JPEG, PNG, and WebP files belong 
 
 The original archive was searched recursively before adding examples. It contains the road image dataset and the original project’s RAG upload documents are stored in the separate backend source, not in the downloaded archive. Dataset split CSVs are ML metadata and are not used as RAG examples.
 
-The frontend includes one newly written, copyright-safe TXT knowledge document at `public/examples/rag/roadsense-example-knowledge.txt`. It can be selected without browsing the filesystem and requires an explicit upload action.
+The frontend includes the 21 curated image files under `src/assets/examples/road/`, discovered at build time with `import.meta.glob()`. Add another valid image to an existing class folder and it will appear in the same gallery without new JSX. Provenance and approximate source sizes are recorded in `src/assets/examples/road/example-manifest.json`.
 
 The preferred road demonstration is the archive pothole image:
 
@@ -191,6 +202,8 @@ RoadSense-AI-archive/data/Road Issues/Pothole Issues/1_jpg.rf.165df17c20f06ab9f6
 ```
 
 That file exists in the read-only archive and is part of the dataset identified by the original project as the Kaggle Road Issues Detection Dataset. It was not copied into this repository because the archive does not include clear redistribution licensing information. The Detect Damage page links to the source dataset instead.
+
+The archive contains no PDF, TXT, DOC, or DOCX examples. The backend examples are two PDFs copied from original team-project backend uploads into `RoadSense-AI-Backend/examples/documents/`: a Transport Canada road-safety upload and a British Columbia roads/roadless-areas report. Their provenance and document-specific questions are maintained in the backend `metadata.json` file. The exact Ontario report filenames considered during planning were not present in this workspace.
 
 ## Responsive Design
 
@@ -202,6 +215,8 @@ The interface uses fluid widths, CSS Grid, Flexbox, `clamp()` typography, and re
 - Narrow mobile: reduced page gutters and vertically stacked mode controls to avoid horizontal overflow.
 
 All primary controls use practical tap targets, and navigation includes `aria-expanded`, `aria-controls`, and an accessible close action.
+
+Both galleries are horizontal carousels rather than static grids. They auto-scroll slowly, pause on hover and keyboard focus, support wheel/trackpad/touch scrolling and pointer dragging, and disable automatic motion when `prefers-reduced-motion: reduce` is enabled. Image cards size fluidly so desktop shows roughly three to four cards, laptop/tablet two to three, and mobile one to two without creating page overflow.
 
 ## Technology Stack
 
