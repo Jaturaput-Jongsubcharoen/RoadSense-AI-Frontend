@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: roadsense-ai-frontend
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
