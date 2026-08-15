@@ -213,7 +213,7 @@ export default function ImageUploader({ exampleFile, onPrediction }) {
     <div className="uploader-content">
       <div className="uploader-icon" aria-hidden="true">⌁</div>
       <h2>Choose a road image</h2>
-      <p className="uploader-copy">Use a clear image with the road issue visible. The model predicts one of seven categories.</p>
+      <p className="uploader-copy">Use a clear image with the road issue visible. The model identifies Broken Road Sign, Damaged Road, Illegal Parking, Littering, Mixed Issues, Pothole, or Vandalism.</p>
 
       <input
         id="road-image"

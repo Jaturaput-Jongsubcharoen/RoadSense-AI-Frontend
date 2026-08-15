@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title>RoadSense AI mark</title>
+  <desc>Minimal dark circular RS monogram.</desc>
+  <circle cx="32" cy="32" r="29" fill="#17221e"/>
+  <text x="32" y="39" fill="#d7f36b" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle">RS</text>
+</svg>

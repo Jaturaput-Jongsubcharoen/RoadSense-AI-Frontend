@@ -76,7 +76,7 @@ export default function DocumentExampleGallery({ onUseDocument }) {
         </div>
         <p>Preview a first page, then send the selected document through the same RAG indexing flow as a manual upload.</p>
       </div>
-      {isLoading && <p className="status-message" role="status">Loading example documents…</p>}
+      {isLoading && <div className="document-carousel document-skeleton-carousel" role="status" aria-label="Loading reference documents">{Array.from({ length: 3 }, (_, index) => <div className="document-skeleton" key={index}><span /><div /><div /><b /></div>)}</div>}
       {error && <p className="status-message status-error" role="alert">{error}</p>}
       {!isLoading && !error && (
         <div className="document-carousel" ref={carouselRef} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }} tabIndex={0} aria-label="Example document carousel">

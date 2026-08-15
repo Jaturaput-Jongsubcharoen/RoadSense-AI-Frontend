@@ -26,6 +26,19 @@ This repository contains the client application only. The Flask API, TensorFlow 
 - Enter-key submission for chat messages and in-page conversation history.
 - Responsive sidebar navigation that becomes a keyboard-accessible drawer on smaller screens.
 - Guided example questions and a bundled original RAG knowledge document for immediate testing.
+- Compact animated workflow diagrams on the Home feature cards showing the verified image-classification and assistant pipelines.
+
+### Home Workflow Visualizations
+
+The Home cards include decorative, data-driven process visualizations based on the implemented services:
+
+```text
+Road image -> 224 x 224 preprocessing -> EfficientNetB0 -> seven categories -> result
+Question -> local Ollama Llama 3.1 -> answer
+Document -> extracted chunks -> Sentence Transformer embeddings -> FAISS retrieval -> Llama 3.1 -> grounded answer
+```
+
+The assistant card cycles between Normal Chat and Agentic RAG views. The diagrams pause when their card is hovered or focused, and `prefers-reduced-motion` displays the steps statically.
 
 ## How the Platform Works
 
@@ -193,6 +206,8 @@ The original archive was searched recursively before adding examples. It contain
 
 The backend owns the 21 curated image files under `RoadSense-AI-Backend/examples/images/`. The frontend calls `GET /api/examples/images` and builds the gallery from safe metadata, so adding another valid image to an existing backend category folder makes it appear after refresh without new JSX or a second frontend source of truth.
 
+The backend selects up to two random files per verified category for each gallery mount. The frontend keeps that selection stable while the Detect page is open and filters it locally; changing a category does not issue another request. Leaving and returning to Detect, or refreshing the page, requests a fresh selection. The initial image cards use eager loading for the first visible examples and lazy loading for later carousel items.
+
 The preferred road demonstration is the archive pothole image:
 
 ```text
@@ -215,6 +230,8 @@ The interface uses fluid widths, CSS Grid, Flexbox, `clamp()` typography, and re
 All primary controls use practical tap targets, and navigation includes `aria-expanded`, `aria-controls`, and an accessible close action.
 
 Both galleries are horizontal carousels rather than static grids. They auto-scroll slowly, pause on hover and keyboard focus, support wheel/trackpad/touch scrolling and pointer dragging, and disable automatic motion when `prefers-reduced-motion: reduce` is enabled. Image cards size fluidly so desktop shows roughly three to four cards, laptop/tablet two to three, and mobile one to two without creating page overflow.
+
+Image and document lists render card-shaped skeleton placeholders during their metadata request so the page does not hold a large blank region. Static image and document responses are served by the backend with browser cache headers.
 
 ## Technology Stack
 
